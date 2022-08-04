@@ -1,55 +1,360 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
-  version: 1.0.0
-  title: Example.com
-  termsOfService: 'https://example.com/terms/'
-  contact:
-    email: contact@example.com
-    url: 'http://example.com/contact'
-  license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-  x-logo:
-    url: 'https://redocly.github.io/openapi-template/logo.png'
-  description:
-    $ref: ./info-description.md
-tags:
-  - name: Echo
-    description: Example echo operations.
-  - name: User
-    description: Operations about users.
-  - name: Tag
-    description: This is a tag description.
-servers:
-  - url: 'https://{tenant}/api/v1'
-    variables:
-      tenant:
-        default: www
-        description: Your tenant id
-  - url: 'https://example.com/api/v1'
+  title: webapi documentation
+  description: >-
+    Endpoints to be generated and exposed from client side to send sms and
+    recieve response
+  version: 1.0.0-oas3
 paths:
-  '/users/{username}':
-    $ref: 'paths/users_{username}.yaml'
-  /echo:
-    $ref: paths/echo.yaml
-  /pathItem:
-    $ref: paths/path-item.yaml
-  /pathItemWithExamples:
-    $ref: paths/path-item-with-examples.yaml
+  /GenericSMS:
+    post:
+      summary: Send generic sms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenricSMSRequest'
+        description: JSON Object
+        required: true
+      tags:
+        - GenricSMSRequest
+      responses:
+        '200':
+          description: Generic SMS send response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSMSResponse'
+  /PersonalizedSmS:
+    post:
+      summary: Send personalized sms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalizedSMSRequest'
+        description: JSON Object
+        required: true
+      tags:
+        - PersonalizedSMSRequest
+      responses:
+        '200':
+          description: Personalized SMS send response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSMSResponse'
+  /RecieveSMS:
+    post:
+      summary: Recieve SMS.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecieveSMSRequest'
+        description: JSON Object
+        required: true
+      tags:
+        - RecieveSMS
+      responses:
+        '200':
+          description: Recieve reciepient Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecieveSMSResponse'
+servers:
+  - url: https://virtserver.swaggerhub.com/CHAYMAHAMMAMI/OpenApi/1.0.0
+  - url: http://virtserver.swaggerhub.com/CHAYMAHAMMAMI/OpenApi/1.0.0
 components:
-  securitySchemes:
-    main_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'http://example.com/api/oauth/dialog'
-          scopes:
-            'read:users': read users info
-            'write:users': modify or remove users
-    api_key:
-      type: apiKey
-      in: header
-      name: api_key
-    basic_auth:
-      type: http
-      scheme: basic
+  schemas:
+    GenricSMSRequest:
+      type: object
+      required:
+        - login
+        - pass
+        - compte
+        - op
+        - customized
+        - dest_num
+        - msg
+        - type
+        - dt
+        - hr
+        - mn
+        - label
+        - ref
+      properties:
+        login:
+          type: string
+          example: MC01
+          description: votre login wboard
+        pass:
+          type: string
+          example: pass
+          description: Votre mot de passe wsboard
+        compte:
+          type: string
+          example: Mercedes
+          description: Votre compte wboard
+        op:
+          type: string
+          example: '1'
+          description: Le code de l'opération d'envoie de SMS
+        customized:
+          type: string
+          example: '0'
+          description: indique si le message est générique ( 0=>générique)
+        dest_num:
+          type: string
+          example: '27674614'
+          description: >-
+            liste des numéros de numéros de destinations séparés pa ; Les
+            numéros doivent être au format international, commençant par le code
+            du pays.
+        msg:
+          type: string
+          example: web_api test
+          description: Le texte du message générique à envoyer
+        type:
+          type: string
+          example: '0'
+          description: Langue du texte du message ( 0=>latin , 2=>arabe ou carct.spéciaux)
+        auto_detect:
+          type: string
+          example: '1'
+          description: >-
+            Détecte automatiquement la langue du texte du message( 0=>utiliser
+            type,1=> détection automatique)
+        dt:
+          type: string
+          example: 8/4/2022
+          description: Date d’envoi au format dd/mm/yyyy
+        hr:
+          type: string
+          example: '09'
+          description: Heure d’envoi au format HH, timezone GMT+1, sans DST
+        mn:
+          type: string
+          example: '30'
+          description: Minute d’envoi au format MM
+        label:
+          type: string
+          example: MERCEDES
+          description: >-
+            Entête alphanumérique du message à envoyer. La longueur maximale du
+            label est 11 caractères.
+        ref:
+          type: string
+          example: test
+          description: >-
+            Référence de l’envoi, sert à consulter l’historique et les accusés
+            de réception
+    SendSMSResponse:
+      type: object
+      properties:
+        op:
+          type: string
+          description: Code l’opération (1=envoi)
+        status:
+          type: string
+          description: Code du résultat de l’opération d’envoi (voir Tableau 6 ci-dessous)
+        status_desc:
+          type: string
+          description: Description du code du résultat
+        nat_count:
+          type: string
+          description: Nombre d’unités taxées pour les SMS nationaux, valide si status=0
+        int_count:
+          type: string
+          description: >-
+            Nombre d’unités taxées pour les SMS internationaux, valide si
+            status=0
+        tot_scheduled:
+          type: string
+          description: Nombre total de messages planifiés pour envoi, valide si status=0
+    RecieveSMSResponse:
+      type: object
+      properties:
+        op:
+          type: string
+          description: Code l’opération (2=accusés de réception)
+        status:
+          type: string
+          description: Code du résultat de l’opération de lecture des accusés
+        status_desc:
+          type: string
+          description: Description du code du résultat
+        ack:
+          type: object
+          items:
+            $ref: '#/components/schemas/itemsobj'
+    PersonalizedSMSRequest:
+      type: object
+      required:
+        - login
+        - pass
+        - compte
+        - op
+        - customized
+        - type
+        - dt
+        - hr
+        - mn
+        - label
+        - ref
+      properties:
+        login:
+          type: string
+          example: MC01
+          description: votre login wboard
+        pass:
+          type: string
+          example: pass
+          description: Votre mot de passe wsboard
+        compte:
+          type: string
+          example: Mercedes
+          description: Votre compte wboard
+        op:
+          type: string
+          example: '1'
+          description: Le code de l'opération d'envoie de SMS
+        customized:
+          type: string
+          example: '1'
+          description: indique si le message est pérsonnalisé ( 1=>pérsonnalisé)
+        cust_msg:
+          type: object
+          example:
+            - dest_num: '21627674614'
+              msg: web_api test
+          description: Tableau de couples (dest_num,msg)
+          items:
+            $ref: '#/components/schemas/cust_msg'
+        msg:
+          type: string
+          example: web_api test
+          description: Le texte du message générique à envoyer
+        type:
+          type: string
+          example: '0'
+          description: Langue du texte du message ( 0=>latin , 2=>arabe ou caract.spéciaux)
+        auto_detect:
+          type: string
+          example: '1'
+          description: >-
+            Détecte automatiquement la langue du texte du message ( 0=>utiliser
+            type,1=> détection automatique)
+        dt:
+          type: string
+          example: 8/4/2022
+          description: Date d’envoi au format dd/mm/yyyy
+        hr:
+          type: string
+          example: '09'
+          description: Heure d’envoi au format HH, timezone GMT+1, sans DST
+        mn:
+          type: string
+          example: '30'
+          description: Minute d’envoi au format MM
+        label:
+          type: string
+          example: MERCEDES
+          description: >-
+            Entête alphanumérique du message à envoyer. La longueur maximale du
+            label est 11 caractères.
+        ref:
+          type: string
+          example: test
+          description: >-
+            Référence de l’envoi, sert à consulter l’historique et les accusés
+            de réception
+    RecieveSMSRequest:
+      type: object
+      required:
+        - login
+        - pass
+        - compte
+        - op
+        - dt
+        - dt_end
+        - dest_num
+        - ref
+      properties:
+        login:
+          type: string
+          example: MC01
+          description: votre login wboard
+        pass:
+          type: string
+          example: pass
+          description: Votre mot de passe wsboard
+        compte:
+          type: string
+          example: Mercedes
+          description: Votre compte wboard
+        op:
+          type: string
+          example: '1'
+          description: Le code de l'opération d'envoie de SMS
+        dt:
+          type: string
+          example: 8/4/2022
+          description: Date d’envoi au format dd/mm/yyyy
+        dt_end:
+          type: string
+          example: 9/4/2022
+          description: >-
+            Paramètre optionnel désignant la date de fin pour lire les accusés
+            de réception sur une période de dt à dt_end. Par défaut dt_end=dt
+        dest_num:
+          type: number
+          example: 8/4/2022
+          description: >-
+            Un numéro de destination particulier. Si ce paramètre est vide,
+            alors les SMS de la date présentée sont vérifiés
+        ref:
+          type: string
+          example: test
+          description: >-
+            Référence d’un envoi particulier. Si ce paramètre est fourni,alors
+            seulement les SMS relatifs à cette référence sont vérifiés.
+    cust_msg:
+      type: object
+      properties:
+        dest_num:
+          type: string
+          description: >-
+            Numéro de destination au format international, commençant par le
+            code du pays.
+        msg:
+          type: string
+          description: Le texte du message à envoyer à dest_num
+    itemsobj:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifiant de l’accusé
+        ref:
+          type: string
+          description: Référence de l’opération d’envoi
+        source:
+          type: string
+          description: Label d’envoi
+        dest:
+          type: number
+          description: Numéro de destination
+        msg:
+          type: string
+          description: Texte du SMS
+        tx_ts:
+          type: number
+          description: Heure d’envoi
+        tx_status:
+          type: number
+          description: Etat d’envoi
+        deliv_status:
+          type: string
+          description: Etat de livraison
